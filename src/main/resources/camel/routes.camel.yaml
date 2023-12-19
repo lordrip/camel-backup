@@ -1,0 +1,21 @@
+- route:
+    id: my-yaml-route
+    from:
+      id: from-4200
+      uri: cron:check-files
+      parameters:
+        schedule: "* * * * ?"
+      steps:
+        - to:
+            uri: file
+            parameters:
+              noop: true
+              recursive: true
+              keepLastModified: true
+              readLockLoggingLevel: INFO
+              runLoggingLevel: INFO
+              directoryName: test/source
+              includeExt: dbf
+            disabled: true
+        - to:
+            uri: log:from-yaml
