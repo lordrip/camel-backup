@@ -1,21 +1,16 @@
 - route:
-    id: my-yaml-route
+    id: file-consumer
     from:
-      id: from-4200
-      uri: cron:check-files
+      uri: file:test/source
       parameters:
-        schedule: "* * * * ?"
+        noop: "true"
+        scheduler: quartz
+        schedulerProperties: "#quartzProperties"
+        idempotent: false
       steps:
-        - to:
-            uri: file
-            parameters:
-              noop: true
-              recursive: true
-              keepLastModified: true
-              readLockLoggingLevel: INFO
-              runLoggingLevel: INFO
-              directoryName: test/source
-              includeExt: dbf
-            disabled: false
-        - to:
-            uri: log:from-yaml
+        - log: Picked up file ${headers.CamelFileName}
+- beans:
+    - name: quartzProperties
+      type: java.util.HashMap
+      properties:
+        cron: 0 * * * * ?
