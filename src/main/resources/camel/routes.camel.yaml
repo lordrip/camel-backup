@@ -11,19 +11,19 @@
       steps:
         - log: Picked up file ${headers.CamelFileName}
         - aggregate:
-            aggregationStrategy: "#zipAggregationStrategy"
+            aggregationStrategy: "#arrayAggregationStrategy"
             completionFromBatchConsumer: true
             correlationExpression:
               simple: constant(true)
             steps:
-              - marshal:
-                  zipFile: {}
+              - process:
+                  ref: zipFileProcessor
               - to:
-                  uri: direct:zip-compressor
+                  uri: direct:store-zip-file
 - route:
     id: zip-compressor
     from:
-      uri: direct:zip-compressor
+      uri: direct:store-zip-file
       steps:
         - setHeader:
             name: CamelFileName
@@ -38,5 +38,7 @@
       type: java.util.HashMap
       properties:
         cron: 0 * * * * ?
-    - name: zipAggregationStrategy
-      type: com.igeg.sgbackup.ZipAggregationStrategy
+    - name: zipFileProcessor
+      type: com.igeg.sgbackup.ZipFileProcessor
+    - name: arrayAggregationStrategy
+      type: com.igeg.sgbackup.ArrayAggregationStrategy
