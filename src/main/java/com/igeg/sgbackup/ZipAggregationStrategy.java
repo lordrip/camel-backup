@@ -22,23 +22,22 @@ public class ZipAggregationStrategy implements AggregationStrategy {
             } else {
                 // Subsequent files in aggregation
                 byteArrayOutputStream = oldExchange.getIn().getBody(ByteArrayOutputStream.class);
-                zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
+                zipOutputStream = oldExchange.getProperty("zipOutputStream", ZipOutputStream.class);
             }
 
             // Add the new file to the ZIP
             String filename = newExchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
-            ZipEntry entry = new ZipEntry(filename);
+            ZipEntry zipEntry = new ZipEntry(filename);
 
-            zipOutputStream.putNextEntry(entry);
+            zipOutputStream.putNextEntry(zipEntry);
             zipOutputStream.write(newExchange.getIn().getBody(byte[].class));
             zipOutputStream.closeEntry();
 
-            // Prepare for next aggregation, if any
-            if (newExchange.getPattern().isOutCapable()) {
-                newExchange.getMessage().setBody(byteArrayOutputStream);
-            } else {
-                newExchange.getIn().setBody(byteArrayOutputStream);
-            }
+            // Save the ZipOutputStream for further use
+            newExchange.setProperty("zipOutputStream", zipOutputStream);
+
+            // Set the ByteArrayOutputStream in the body
+            newExchange.getIn().setBody(byteArrayOutputStream);
 
             // Close the ZIP output stream for the last file
             String completedBy = newExchange.getProperty(Exchange.AGGREGATED_COMPLETED_BY, String.class);
