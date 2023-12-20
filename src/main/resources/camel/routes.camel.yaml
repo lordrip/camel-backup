@@ -1,42 +1,45 @@
 - route:
     id: file-consumer
+    autoStartup: true
     from:
       uri: file:test/source
       parameters:
+        idempotent: false
+        includeExt: txt
         noop: true
         scheduler: quartz
         schedulerProperties: "#quartzProperties"
-        idempotent: false
-        includeExt: txt
       steps:
         - log: Picked up file ${headers.CamelFileName}
         - aggregate:
-            aggregationStrategy: "#zipAggregationStrategy"
+            steps:
+              - process:
+                  ref: zipFileProcessor
+              - to:
+                  uri: direct:store-zip-file
+            aggregationStrategy: "#arrayAggregationStrategy"
             completionFromBatchConsumer: true
             correlationExpression:
               simple: constant(true)
-            steps:
-              - marshal:
-                  zipFile: {}
-              - to:
-                  uri: direct:zip-compressor
 - route:
     id: zip-compressor
     from:
-      uri: direct:zip-compressor
+      uri: direct:store-zip-file
       steps:
         - setHeader:
-            name: CamelFileName
             expression:
               simple: ${date:now:yyyy-MM-dd HH-mm-ss}.zip
+            name: CamelFileName
         - to:
             uri: file:test/destination
             parameters:
               fileName: ${header.CamelFileName}
 - beans:
     - name: quartzProperties
-      type: java.util.HashMap
       properties:
         cron: 0 * * * * ?
-    - name: zipAggregationStrategy
-      type: com.igeg.sgbackup.ZipAggregationStrategy
+      type: java.util.HashMap
+    - name: zipFileProcessor
+      type: com.igeg.sgbackup.ZipFileProcessor
+    - name: arrayAggregationStrategy
+      type: com.igeg.sgbackup.ArrayAggregationStrategy

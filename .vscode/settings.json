@@ -1,7 +1,0 @@
-{
-    "java.configuration.updateBuildConfiguration": "automatic",
-    "java.project.referencedLibraries": [
-        "lib/**/*.jar",
-        "/home/rmartinez/.config/Code/User/globalStorage/redhat.vscode-camelk/java-dependencies/*.jar"
-    ]
-}
