@@ -3,14 +3,40 @@
     from:
       uri: file:test/source
       parameters:
-        noop: "true"
+        noop: true
         scheduler: quartz
         schedulerProperties: "#quartzProperties"
         idempotent: false
+        includeExt: txt
       steps:
         - log: Picked up file ${headers.CamelFileName}
+        - aggregate:
+            aggregationStrategy: "#zipAggregationStrategy"
+            completionFromBatchConsumer: true
+            correlationExpression:
+              simple: constant(true)
+            steps:
+              - marshal:
+                  zipFile: {}
+              - to:
+                  uri: direct:zip-compressor
+- route:
+    id: zip-compressor
+    from:
+      uri: direct:zip-compressor
+      steps:
+        - setHeader:
+            name: CamelFileName
+            expression:
+              simple: ${date:now:yyyy-MM-dd HH-mm-ss}.zip
+        - to:
+            uri: file:test/destination
+            parameters:
+              fileName: ${header.CamelFileName}
 - beans:
     - name: quartzProperties
       type: java.util.HashMap
       properties:
         cron: 0 * * * * ?
+    - name: zipAggregationStrategy
+      type: com.igeg.sgbackup.ZipAggregationStrategy

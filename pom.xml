@@ -70,6 +70,14 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
+      <artifactId>camel-quarkus-zipfile</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.quarkus</groupId>
+      <artifactId>camel-quarkus-dataformat</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-yaml-dsl</artifactId>
     </dependency>
     <dependency>
@@ -105,6 +113,16 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-file-watch</artifactId>
+      <version>4.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-dataformat</artifactId>
+      <version>4.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-zipfile</artifactId>
       <version>4.2.0</version>
     </dependency>
     <dependency>
