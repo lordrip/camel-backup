@@ -12,37 +12,38 @@ public class ZipAggregationStrategy implements AggregationStrategy {
     @Override
     public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
         try {
-            ByteArrayOutputStream baos;
-            ZipOutputStream zos;
+            ByteArrayOutputStream byteArrayOutputStream;
+            ZipOutputStream zipOutputStream;
 
             if (oldExchange == null) {
                 // First file in aggregation
-                baos = new ByteArrayOutputStream();
-                zos = new ZipOutputStream(baos);
+                byteArrayOutputStream = new ByteArrayOutputStream();
+                zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
             } else {
                 // Subsequent files in aggregation
-                baos = (ByteArrayOutputStream) oldExchange.getIn().getBody();
-                zos = new ZipOutputStream(baos);
+                byteArrayOutputStream = oldExchange.getIn().getBody(ByteArrayOutputStream.class);
+                zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
             }
 
             // Add the new file to the ZIP
             String filename = newExchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
             ZipEntry entry = new ZipEntry(filename);
-            zos.putNextEntry(entry);
-            zos.write(newExchange.getIn().getBody(byte[].class));
-            zos.closeEntry();
+
+            zipOutputStream.putNextEntry(entry);
+            zipOutputStream.write(newExchange.getIn().getBody(byte[].class));
+            zipOutputStream.closeEntry();
 
             // Prepare for next aggregation, if any
             if (newExchange.getPattern().isOutCapable()) {
-                newExchange.getMessage().setBody(baos);
+                newExchange.getMessage().setBody(byteArrayOutputStream);
             } else {
-                newExchange.getIn().setBody(baos);
+                newExchange.getIn().setBody(byteArrayOutputStream);
             }
 
             // Close the ZIP output stream for the last file
             String completedBy = newExchange.getProperty(Exchange.AGGREGATED_COMPLETED_BY, String.class);
             if (completedBy != null && completedBy.equals("size")) {
-                zos.close();
+                zipOutputStream.close();
             }
 
             return newExchange;
